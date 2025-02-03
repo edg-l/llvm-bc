@@ -1,0 +1,10 @@
+[package]
+name = "llvm-bc"
+version = "0.1.0"
+edition = "2021"
+description = "LLVM Bitcode Writer and Reader"
+authors = ["Edgar Luque <edgar@edgl.dev>"]
+
+[dependencies]
+bytes = "1.9.0"
+smallvec = "1.13.2"
