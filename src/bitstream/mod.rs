@@ -1,5 +1,15 @@
-use crate::{abbrv::Abbr, bitstream_writer::BitStreamWriter, block::Block, operand::OperandValue};
 use std::collections::HashMap;
+
+use abbrv::Abbr;
+use bitstream_writer::BitStreamWriter;
+use block::Block;
+use operand::OperandValue;
+
+mod abbrv;
+mod bitstream_writer;
+mod block;
+mod module;
+mod operand;
 
 const ROOT_ABBR_ID_WIDTH: u32 = 2;
 const BLOCK_ID_WIDTH: u32 = 8;
@@ -73,8 +83,10 @@ impl BitStream {
         let elem = self.stack.pop().unwrap();
         assert_eq!(elem.block.id, id, "ending invalid block");
 
-        let computed_len = (self.writer.bit_offset() - elem.offset) / 4;
+        let computed_len: u32 = ((self.writer.buffer.len() - elem.offset) / 4) as u32;
+        dbg!(&computed_len);
         let computed_len = computed_len.to_le_bytes();
+        dbg!(&computed_len);
 
         for (i, byte) in computed_len.into_iter().enumerate() {
             self.writer.buffer[elem.length_offset + i] = byte;
@@ -173,7 +185,7 @@ impl BitStream {
 
             self.writer.write_bits(vbr | (lo & mask), width);
             lo = left;
-            hi = hi >> value_bits;
+            hi >>= value_bits;
         }
 
         self.writer.write_bits(lo, width);
@@ -192,5 +204,32 @@ impl BitStream {
 
     pub fn align(&mut self, align: u32) {
         self.writer.align(align);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::BitStream;
+
+    #[test]
+    pub fn write_vbt_32bit() {
+        let mut writer = BitStream::new(0xdeadbeef);
+        writer.write_vbr(0x1e, 4);
+        writer.writer.align(32);
+        writer.writer.flush();
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "3e000000");
+    }
+
+    #[test]
+    pub fn write_block() {
+        let mut writer = BitStream::new(0xdeadbeef);
+        writer.enter_block(50, 4);
+        writer.end_block(50);
+        writer.writer.flush();
+
+        std::fs::write("out.bc", &writer.writer.buffer).unwrap();
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "c91000000100000000000000");
     }
 }

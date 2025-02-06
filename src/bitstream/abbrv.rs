@@ -1,5 +1,5 @@
-use crate::{
-    bitstream::BitStream,
+use super::{
+    BitStream,
     operand::{OperandDef, OperandValue},
 };
 

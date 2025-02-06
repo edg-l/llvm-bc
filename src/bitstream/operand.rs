@@ -46,7 +46,13 @@ impl OperandValue {
                     .writer
                     .write_bits(fixed_value.value, fixed_value.width);
             }
-            OperandValue::Array(operands) => todo!(),
+            OperandValue::Array(operands) => {
+                stream.write_vbr(operands.len() as u32, LEN_WIDTH);
+
+                for op in operands {
+                    op.encode(stream);
+                }
+            },
             OperandValue::Blob(blob_value) => {
                 stream.write_vbr(blob_value.len() as u32, LEN_WIDTH);
                 stream.align(32);

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::abbrv::Abbr;
+use super::abbrv::Abbr;
 
 const MIN_ABBR_ID_WIDTH: u32 = 2;
 const ABBR_INDEX_OFF: u32 = 4;

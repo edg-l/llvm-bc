@@ -8,3 +8,6 @@ authors = ["Edgar Luque <edgar@edgl.dev>"]
 [dependencies]
 bytes = "1.9.0"
 smallvec = "1.13.2"
+
+[dev-dependencies]
+hex = "0.4.3"
