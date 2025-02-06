@@ -2,8 +2,10 @@
 name = "llvm-bc"
 version = "0.1.0"
 edition = "2021"
-description = "LLVM Bitcode Writer and Reader"
+description = "LLVM Bitcode Writer"
 authors = ["Edgar Luque <edgar@edgl.dev>"]
+keywords = ["llvm", "bitcode", "llvm-bc", "llvm-bitcode"]
+categories = ["parser-implementations", "compilers", "api-bindings"]
 
 [dependencies]
 bytes = "1.9.0"
