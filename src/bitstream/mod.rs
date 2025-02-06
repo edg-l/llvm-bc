@@ -43,6 +43,7 @@ pub struct BitStream {
 }
 
 impl BitStream {
+    /// Creates a new `BitStream` with the given magic number.
     pub fn new(magic: u32) -> Self {
         let mut s = Self {
             writer: BitStreamWriter::new(),
@@ -55,6 +56,7 @@ impl BitStream {
         s
     }
 
+    /// Enters a block, should call `end_block` with the same id later.
     pub fn enter_block(&mut self, id: u32, abbr_id_width: u32) {
         self.write_abbr_id(ENTER_SUBBLOCK);
         self.write_vbr(id, BLOCK_ID_WIDTH);
@@ -74,6 +76,7 @@ impl BitStream {
         });
     }
 
+    /// Ends the block with the given id.
     pub fn end_block(&mut self, id: u32) {
         self.write_abbr_id(END_BLOCK);
         self.writer.align(32);
@@ -84,15 +87,14 @@ impl BitStream {
         assert_eq!(elem.block.id, id, "ending invalid block");
 
         let computed_len: u32 = ((self.writer.buffer.len() - elem.offset) / 4) as u32;
-        dbg!(&computed_len);
         let computed_len = computed_len.to_le_bytes();
-        dbg!(&computed_len);
 
         for (i, byte) in computed_len.into_iter().enumerate() {
             self.writer.buffer[elem.length_offset + i] = byte;
         }
     }
 
+    /// Writes the given block info to the current entered block.
     pub fn write_block_info(&mut self, map: &BlockInfoMap) {
         if map.is_empty() {
             return;
@@ -116,6 +118,7 @@ impl BitStream {
         self.end_block(BLOCKINFO);
     }
 
+    /// Writes the given abbr.
     pub fn define_abbr(&mut self, abbr: &Abbr) {
         assert!(!self.stack.is_empty());
 
@@ -125,6 +128,7 @@ impl BitStream {
         block.block.add_abbr(abbr.clone());
     }
 
+    /// Writes the given record.
     pub fn write_record(&mut self, abbr_name: &str, operands: &[OperandValue]) {
         let block = &self.stack[self.stack.len() - 1].block;
         let entry = block
@@ -137,6 +141,7 @@ impl BitStream {
         entry.abbr.write(self, operands);
     }
 
+    /// Writes an unabbreviated record.
     pub fn write_unabrr_record(&mut self, code: u32, values: &[u32]) {
         self.write_abbr_id(UNABBREV_RECORD);
         self.write_vbr(code, CODE_WIDTH);
@@ -146,6 +151,7 @@ impl BitStream {
         }
     }
 
+    /// Writes a VBR int.
     pub fn write_vbr(&mut self, mut value: u32, width: u32) {
         assert!((2..=32).contains(&width), "Invalid bit size for VBR");
 
@@ -162,14 +168,11 @@ impl BitStream {
         self.writer.write_bits(value, width);
     }
 
-    pub fn write_vbr_u64(&mut self, value: u64, width: u32) {
+    pub fn write_vbr_u64(&mut self, mut hi: u32, mut lo: u32, width: u32) {
         assert!((2..=64).contains(&width), "Invalid bit size for VBR");
 
-        let mut hi = ((value >> 32) & u32::MAX as u64) as u32;
-        let mut lo = (value & u32::MAX as u64) as u32;
-
         if hi == 0 {
-            return self.write_vbr(lo, width.min(32));
+            return self.write_vbr(lo, width);
         }
 
         let value_bits = width - 1;
@@ -177,7 +180,7 @@ impl BitStream {
         let vbr = 1 << value_bits;
 
         while hi != 0 {
-            let left = (hi & mask) << (32 - value_bits) | (lo >> value_bits);
+            let left = ((hi & mask) << (32 - value_bits)) | (lo >> value_bits);
 
             if left == 0 {
                 break;
@@ -191,6 +194,7 @@ impl BitStream {
         self.writer.write_bits(lo, width);
     }
 
+    /// Writes the given abbr id.
     pub fn write_abbr_id(&mut self, id: u32) {
         let len = self.stack.len();
         let width = if len == 0 {
@@ -209,27 +213,145 @@ impl BitStream {
 
 #[cfg(test)]
 mod tests {
+    use crate::bitstream::{
+        abbrv::Abbr,
+        operand::{OperandDef, OperandValue},
+        BlockInfoMap,
+    };
+
     use super::BitStream;
+
+    #[test]
+    pub fn write_vbt() {
+        let mut writer = BitStream::new(0xdeadbeef);
+        writer.write_vbr(0x1e, 4);
+        writer.writer.flush();
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "3e");
+    }
 
     #[test]
     pub fn write_vbt_32bit() {
         let mut writer = BitStream::new(0xdeadbeef);
-        writer.write_vbr(0x1e, 4);
-        writer.writer.align(32);
+        writer.write_vbr(0x3, 6);
         writer.writer.flush();
         let content = hex::encode(&writer.writer.buffer[4..]);
-        assert_eq!(content, "3e000000");
+        assert_eq!(content, "03");
+
+        let mut writer = BitStream::new(0xdeadbeef);
+        writer.write_vbr(0xabba, 6);
+        writer.writer.flush();
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "7aaf06");
+    }
+
+    #[test]
+    pub fn write_vbt_64bit() {
+        let mut writer = BitStream::new(0xdeadbeef);
+        writer.write_vbr_u64(0, 0x3, 6);
+        writer.writer.flush();
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "03");
+
+        let mut writer = BitStream::new(0xdeadbeef);
+        writer.write_vbr_u64(0xabbaabba, 0xc0dec0de, 6);
+        writer.writer.flush();
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "be09f72db8de");
+        // assert_eq!(content, "be09f72db8de6bedde0a");
     }
 
     #[test]
     pub fn write_block() {
         let mut writer = BitStream::new(0xdeadbeef);
-        writer.enter_block(50, 4);
-        writer.end_block(50);
+        writer.enter_block(8, 2);
+        writer.end_block(8);
+        writer.writer.flush();
+
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "210800000100000000000000");
+    }
+
+    #[test]
+    pub fn write_block_subblocks() {
+        let mut writer = BitStream::new(0xdeadbeef);
+        writer.enter_block(8, 4);
+        writer.enter_block(9, 6);
+        writer.end_block(9);
+        writer.end_block(8);
+        writer.writer.flush();
+
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "211000000400000091600000010000000000000000000000");
+    }
+
+    #[test]
+    pub fn write_record_without_abbrv() {
+        let mut writer = BitStream::new(0xdeadbeef);
+        writer.enter_block(8, 4);
+
+        writer.write_unabrr_record(16, &[1, 2, 3, 4, 5]);
+
+        writer.end_block(8);
+        writer.writer.flush();
+
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "21100000020000000315813010050000");
+    }
+
+    #[test]
+    pub fn define_and_use_abbr() {
+        let mut writer = BitStream::new(0xdeadbeef);
+
+        let abbr = Abbr::new(
+            "source",
+            vec![
+                OperandDef::Literal(16),
+                OperandDef::Array(OperandDef::Char6.into()),
+            ],
+        );
+
+        writer.enter_block(8, 4);
+
+        writer.define_abbr(&abbr);
+
+        writer.write_record("source", &["hello_world".into()]);
+
+        writer.end_block(8);
+        writer.writer.flush();
+
+        // std::fs::write("out.bc", &writer.writer.buffer).unwrap();
+        let content = hex::encode(&writer.writer.buffer[4..]);
+        assert_eq!(content, "2110000004000000324218d27210cbe2fc96132d03000000");
+    }
+
+    #[test]
+    pub fn write_block_info() {
+        let mut writer = BitStream::new(0xdeadbeef);
+
+        let abbr = Abbr::new(
+            "source",
+            vec![
+                OperandDef::Literal(16),
+                OperandDef::Array(OperandDef::Char6.into()),
+            ],
+        );
+
+        let mut map = BlockInfoMap::new();
+        map.insert(17, vec![abbr]);
+
+        writer.enter_block(8, 4);
+
+        writer.write_block_info(&map);
+
+        writer.end_block(8);
         writer.writer.flush();
 
         std::fs::write("out.bc", &writer.writer.buffer).unwrap();
         let content = hex::encode(&writer.writer.buffer[4..]);
-        assert_eq!(content, "c91000000100000000000000");
+        assert_eq!(
+            content,
+            "211000000500000001200000020000000741e4086108000000000000"
+        );
     }
 }

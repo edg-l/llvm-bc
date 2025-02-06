@@ -106,8 +106,6 @@ impl BitStreamWriter {
 
 #[cfg(test)]
 mod tests {
-    use std::io::Read;
-
     use super::*;
 
     #[test]
@@ -189,6 +187,30 @@ mod tests {
             assert_eq!(buf.get_u32_le(), i as u32, "Mismatch at {i}");
             assert_eq!(buf.get_u8(), i as u8, "Mismatch at {i}");
             i += 5;
+        }
+    }
+
+    #[test]
+    fn write_bytes() {
+        let mut writer = BitStreamWriter::new();
+
+        let mut i = 0;
+        while i < 30_000 {
+            writer.write_byte(i as u8);
+            i += 1;
+        }
+
+        assert_eq!(writer.bit_offset(), 30_000 * 8);
+        writer.flush();
+        assert_eq!(writer.bit_offset(), 30_000 * 8);
+
+        assert_eq!(writer.buffer.len(), 30_000);
+
+        let mut i = 0;
+        let mut buf = writer.buffer.as_slice();
+        while i < 30_000 {
+            assert_eq!(buf.get_u8(), i as u8, "Mismatch at {i}");
+            i += 1;
         }
     }
 }

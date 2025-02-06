@@ -1,6 +1,6 @@
 use super::{
-    BitStream,
     operand::{OperandDef, OperandValue},
+    BitStream,
 };
 
 const IS_LITERAL_WIDTH: u32 = 1;
@@ -26,7 +26,7 @@ pub struct Abbr {
 }
 
 impl Abbr {
-    pub fn new(name: String, operands: Vec<OperandDef>) -> Self {
+    pub fn new(name: &str, operands: Vec<OperandDef>) -> Self {
         let mut count = 0;
 
         for op in &operands {
@@ -34,7 +34,7 @@ impl Abbr {
         }
 
         Self {
-            name,
+            name: name.to_string(),
             operands,
             operand_count: count as u32,
         }
@@ -54,21 +54,26 @@ impl Abbr {
                     writer.write_vbr(*value, LITERAL_VALUE_WIDTH);
                 }
                 OperandDef::VBR(width) => {
+                    writer.writer.write_bits(NOT_LITERAL, IS_LITERAL_WIDTH);
                     writer.writer.write_bits(VBR_ENC, ENC_WIDTH);
                     writer.write_vbr(*width, VALUE_WIDTH);
                 }
                 OperandDef::Fixed(width) => {
+                    writer.writer.write_bits(NOT_LITERAL, IS_LITERAL_WIDTH);
                     writer.writer.write_bits(FIXED_ENC, ENC_WIDTH);
                     writer.write_vbr(*width, VALUE_WIDTH);
                 }
                 OperandDef::Array(operands) => {
+                    writer.writer.write_bits(NOT_LITERAL, IS_LITERAL_WIDTH);
                     writer.writer.write_bits(ARRAY_ENC, ENC_WIDTH);
-                    Self::define_operands(writer, operands);
+                    Self::define_operands(writer, &[*(operands).clone()]);
                 }
                 OperandDef::Blob => {
+                    writer.writer.write_bits(NOT_LITERAL, IS_LITERAL_WIDTH);
                     writer.writer.write_bits(BLOB_ENC, ENC_WIDTH);
                 }
                 OperandDef::Char6 => {
+                    writer.writer.write_bits(NOT_LITERAL, IS_LITERAL_WIDTH);
                     writer.writer.write_bits(CHAR6_ENC, ENC_WIDTH);
                 }
             }
@@ -76,7 +81,6 @@ impl Abbr {
     }
 
     pub fn write(&self, writer: &mut BitStream, values: &[OperandValue]) {
-        assert_eq!(self.operands.len(), values.len());
         // todo check matching
         for op in values {
             op.encode(writer);

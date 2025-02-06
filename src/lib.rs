@@ -1,1 +1,1 @@
-mod bitstream;
+pub mod bitstream;

@@ -19,7 +19,7 @@ pub enum OperandDef {
     Literal(u32),
     VBR(u32),
     Fixed(u32),
-    Array(Vec<Self>),
+    Array(Box<Self>),
     Blob,
     Char6,
 }
@@ -27,19 +27,37 @@ pub enum OperandDef {
 #[derive(Debug, Clone)]
 pub enum OperandValue {
     Literal,
-    VBR(VBRValue),
+    Vbr(VBRValue),
     Fixed(FixedValue),
     Array(Vec<Self>),
     Blob(Vec<u8>),
-    Char6(u32),
+    Char6(char),
+}
+
+impl From<&str> for OperandValue {
+    fn from(value: &str) -> Self {
+        assert!(value.is_ascii());
+
+        let mut arr = vec![];
+
+        for char in value.chars() {
+            arr.push(Self::Char6(char));
+        }
+
+        OperandValue::Array(arr)
+    }
 }
 
 impl OperandValue {
     pub fn encode(&self, stream: &mut BitStream) {
         match self {
             OperandValue::Literal => {}
-            OperandValue::VBR(vbrvalue) => {
-                stream.write_vbr_u64(vbrvalue.value, vbrvalue.width);
+            OperandValue::Vbr(vbrvalue) => {
+                stream.write_vbr_u64(
+                    (vbrvalue.value >> 32) as u32,
+                    vbrvalue.value as u32,
+                    vbrvalue.width,
+                );
             }
             OperandValue::Fixed(fixed_value) => {
                 stream
@@ -52,7 +70,7 @@ impl OperandValue {
                 for op in operands {
                     op.encode(stream);
                 }
-            },
+            }
             OperandValue::Blob(blob_value) => {
                 stream.write_vbr(blob_value.len() as u32, LEN_WIDTH);
                 stream.align(32);
@@ -63,6 +81,7 @@ impl OperandValue {
                 stream.align(32);
             }
             OperandValue::Char6(mut code) => {
+                let mut code: u32 = code as u32;
                 // 'a' - 'z'
                 if 0x61 <= code && code <= 0x7a {
                     code = code - 0x61;
@@ -94,15 +113,7 @@ impl OperandDef {
             OperandDef::Literal(_) => 1,
             OperandDef::VBR(_vbrvalue) => 1,
             OperandDef::Fixed(_fixed_value) => 1,
-            OperandDef::Array(operands) => {
-                let mut total = 0;
-
-                for op in operands {
-                    total += op.count();
-                }
-
-                total
-            }
+            OperandDef::Array(operand) => 1 + operand.count(),
             OperandDef::Blob => 1,
             OperandDef::Char6 => 1,
         }
