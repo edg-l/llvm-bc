@@ -53,7 +53,7 @@ impl Abbr {
                     writer.writer.write_bits(LITERAL, IS_LITERAL_WIDTH);
                     writer.write_vbr(*value, LITERAL_VALUE_WIDTH);
                 }
-                OperandDef::VBR(width) => {
+                OperandDef::Vbr(width) => {
                     writer.writer.write_bits(NOT_LITERAL, IS_LITERAL_WIDTH);
                     writer.writer.write_bits(VBR_ENC, ENC_WIDTH);
                     writer.write_vbr(*width, VALUE_WIDTH);

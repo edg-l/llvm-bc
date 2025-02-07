@@ -17,7 +17,7 @@ pub struct VBRValue {
 #[derive(Debug, Clone)]
 pub enum OperandDef {
     Literal(u32),
-    VBR(u32),
+    Vbr(u32),
     Fixed(u32),
     Array(Box<Self>),
     Blob,
@@ -111,7 +111,7 @@ impl OperandDef {
     pub fn count(&self) -> usize {
         match self {
             OperandDef::Literal(_) => 1,
-            OperandDef::VBR(_vbrvalue) => 1,
+            OperandDef::Vbr(_vbrvalue) => 1,
             OperandDef::Fixed(_fixed_value) => 1,
             OperandDef::Array(operand) => 1 + operand.count(),
             OperandDef::Blob => 1,

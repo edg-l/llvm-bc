@@ -262,16 +262,16 @@ pub enum FunctionCide {
     // support legacy vicmp/vfcmp instructions.
     INST_CMP2 = 28, // CMP2:       [opty, opval, opval, pred]
     // new select on i1 or [N x i1]
-    INST_VSELECT = 29, // VSELECT:    [ty,opval,opval,predty,pred]
+    INST_VSELECT = 29,          // VSELECT:    [ty,opval,opval,predty,pred]
     INST_INBOUNDS_GEP_OLD = 30, // INBOUNDS_GEP: [n x operands]
-    INST_INDIRECTBR = 31, // INDIRECTBR: [opty, op0, op1, ...]
+    INST_INDIRECTBR = 31,       // INDIRECTBR: [opty, op0, op1, ...]
     // 32 is unused.
     DEBUG_LOC_AGAIN = 33, // DEBUG_LOC_AGAIN
 
     INST_CALL = 34, // CALL:    [attr, cc, fnty, fnid, args...]
 
-    DEBUG_LOC = 35,  // DEBUG_LOC:  [Line,Col,ScopeVal, IAVal]
-    INST_FENCE = 36, // FENCE: [ordering, synchscope]
+    DEBUG_LOC = 35,        // DEBUG_LOC:  [Line,Col,ScopeVal, IAVal]
+    INST_FENCE = 36,       // FENCE: [ordering, synchscope]
     INST_CMPXCHG_OLD = 37, // CMPXCHG: [ptrty, ptr, cmp, val, vol,
     //            ordering, synchscope,
     //            failure_ordering?, weak?]
@@ -290,11 +290,11 @@ pub enum FunctionCide {
     INST_CMPXCHG = 46,     // CMPXCHG: [ptrty, ptr, cmp, val, vol,
     //           success_ordering, synchscope,
     //           failure_ordering, weak]
-    INST_LANDINGPAD = 47, // LANDINGPAD: [ty,val,num,id0,val0...]
-    INST_CLEANUPRET = 48, // CLEANUPRET: [val] or [val,bb#]
-    INST_CATCHRET = 49,   // CATCHRET: [val,bb#]
-    INST_CATCHPAD = 50,   // CATCHPAD: [bb#,bb#,num,args...]
-    INST_CLEANUPPAD = 51, // CLEANUPPAD: [num,args...]
+    INST_LANDINGPAD = 47,  // LANDINGPAD: [ty,val,num,id0,val0...]
+    INST_CLEANUPRET = 48,  // CLEANUPRET: [val] or [val,bb#]
+    INST_CATCHRET = 49,    // CATCHRET: [val,bb#]
+    INST_CATCHPAD = 50,    // CATCHPAD: [bb#,bb#,num,args...]
+    INST_CLEANUPPAD = 51,  // CLEANUPPAD: [num,args...]
     INST_CATCHSWITCH = 52, // CATCHSWITCH: [num,args...] or [num,args...,bb]
     // 53 is unused.
     // 54 is unused.
