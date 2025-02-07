@@ -1,6 +1,5 @@
-use std::io::Write;
 
-use bytes::{Buf, BufMut, Bytes};
+use bytes::BufMut;
 
 #[derive(Debug, Clone, Default)]
 pub struct BitStreamWriter {
@@ -106,6 +105,8 @@ impl BitStreamWriter {
 
 #[cfg(test)]
 mod tests {
+    use bytes::Buf;
+
     use super::*;
 
     #[test]

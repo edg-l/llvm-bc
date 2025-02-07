@@ -31,7 +31,7 @@ pub enum IdentificationCodes {
     Epoch = 2,
 }
 
-const CurrentEpoch: u32 = 0;
+pub const CURRENT_EPOCH: u32 = 0;
 
 // https://llvm.org/docs/BitCodeFormat.html#module-block-contents
 // https://github.com/llvm/llvm-project/blob/cd708029e0b2869e80abe31ddb175f7c35361f90/llvm/include/llvm/Bitcode/LLVMBitCodes.h#L84

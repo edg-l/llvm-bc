@@ -5,10 +5,10 @@ use bitstream_writer::BitStreamWriter;
 use block::Block;
 use operand::OperandValue;
 
-mod abbrv;
-mod bitstream_writer;
-mod block;
-mod operand;
+pub mod abbrv;
+pub mod bitstream_writer;
+pub mod block;
+pub mod operand;
 
 const ROOT_ABBR_ID_WIDTH: u32 = 2;
 const BLOCK_ID_WIDTH: u32 = 8;
@@ -214,7 +214,7 @@ impl BitStream {
 mod tests {
     use crate::bitstream::{
         abbrv::Abbr,
-        operand::{OperandDef, OperandValue},
+        operand::OperandDef,
         BlockInfoMap,
     };
 
