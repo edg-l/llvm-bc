@@ -80,17 +80,17 @@ impl OperandValue {
                 }
                 stream.align(32);
             }
-            OperandValue::Char6(mut code) => {
-                let mut code: u32 = code as u32;
+            OperandValue::Char6(code) => {
+                let mut code: u32 = (*code) as u32;
                 // 'a' - 'z'
-                if 0x61 <= code && code <= 0x7a {
-                    code = code - 0x61;
+                if (0x61..=0x7a).contains(&code) {
+                    code -= 0x61;
                 }
                 // 'A' - 'Z'
-                else if 0x41 <= code && code <= 0x5a {
+                else if (0x41..=0x5a).contains(&code) {
                     code = code - 0x41 + 26;
                 // '0' - '9'
-                } else if 0x30 <= code && code <= 0x39 {
+                } else if (0x30..=0x39).contains(&code) {
                     code = code - 0x30 + 52;
                 // '.'
                 } else if code == 0x2e {
