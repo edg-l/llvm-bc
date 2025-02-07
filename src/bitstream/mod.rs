@@ -8,7 +8,6 @@ use operand::OperandValue;
 mod abbrv;
 mod bitstream_writer;
 mod block;
-mod module;
 mod operand;
 
 const ROOT_ABBR_ID_WIDTH: u32 = 2;
