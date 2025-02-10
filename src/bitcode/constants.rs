@@ -1,3 +1,5 @@
+#![allow(non_camel_case_types)] // todo: fix later
+
 // https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/llvm/include/llvm/Bitcode/LLVMBitCodes.h
 // https://github.com/llvm/llvm-project/blob/llvmorg-19.1.7/llvm/lib/Bitcode/Writer/BitcodeWriter.cpp
 
@@ -224,6 +226,34 @@ pub enum RMWOperation {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub enum GetElementPtrOptionalFlag {
+    GEP_INBOUNDS = 0,
+    GEP_NUSW = 1,
+    GEP_NUW = 2,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum AtomicOrderingCode {
+    ORDERING_NOTATOMIC = 0,
+    ORDERING_UNORDERED = 1,
+    ORDERING_MONOTONIC = 2,
+    ORDERING_ACQUIRE = 3,
+    ORDERING_RELEASE = 4,
+    ORDERING_ACQREL = 5,
+    ORDERING_SEQCST = 6,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum CallMarkersFlag {
+    CALL_TAIL = 0,
+    CALL_CCONV = 1,
+    CALL_MUSTTAIL = 14,
+    CALL_EXPLICIT_TYPE = 15,
+    CALL_NOTAIL = 16,
+    CALL_FMF = 17, // Call has optional fast-math-flags.
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum FunctionCide {
     DECLAREBLOCKS = 1, // DECLAREBLOCKS: [n]
 
@@ -314,4 +344,219 @@ pub enum FunctionCide {
     //  DIAssignID, DIExpression (addr), ValueAsMetadata (addr)]
     DEBUG_RECORD_VALUE_SIMPLE = 64, // [DILocation, DILocalVariable, DIExpression, Value]
     DEBUG_RECORD_LABEL = 65,        // [DILocation, DILabel]
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum UseListCode {
+    CODE_DEFAULT = 1, // DEFAULT: [index..., value-id]
+    CODE_BB = 2,      // BB: [index..., bb-id]
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum AttributeKindCode {
+    // = 0 is unused
+    ALIGNMENT = 1,
+    ALWAYS_INLINE = 2,
+    BY_VAL = 3,
+    INLINE_HINT = 4,
+    IN_REG = 5,
+    MIN_SIZE = 6,
+    NAKED = 7,
+    NEST = 8,
+    NO_ALIAS = 9,
+    NO_BUILTIN = 10,
+    NO_CAPTURE = 11,
+    NO_DUPLICATE = 12,
+    NO_IMPLICIT_FLOAT = 13,
+    NO_INLINE = 14,
+    NON_LAZY_BIND = 15,
+    NO_RED_ZONE = 16,
+    NO_RETURN = 17,
+    NO_UNWIND = 18,
+    OPTIMIZE_FOR_SIZE = 19,
+    READ_NONE = 20,
+    READ_ONLY = 21,
+    RETURNED = 22,
+    RETURNS_TWICE = 23,
+    S_EXT = 24,
+    STACK_ALIGNMENT = 25,
+    STACK_PROTECT = 26,
+    STACK_PROTECT_REQ = 27,
+    STACK_PROTECT_STRONG = 28,
+    STRUCT_RET = 29,
+    SANITIZE_ADDRESS = 30,
+    SANITIZE_THREAD = 31,
+    SANITIZE_MEMORY = 32,
+    UW_TABLE = 33,
+    Z_EXT = 34,
+    BUILTIN = 35,
+    COLD = 36,
+    OPTIMIZE_NONE = 37,
+    IN_ALLOCA = 38,
+    NON_NULL = 39,
+    JUMP_TABLE = 40,
+    DEREFERENCEABLE = 41,
+    DEREFERENCEABLE_OR_NULL = 42,
+    CONVERGENT = 43,
+    SAFESTACK = 44,
+    ARGMEMONLY = 45,
+    SWIFT_SELF = 46,
+    SWIFT_ERROR = 47,
+    NO_RECURSE = 48,
+    INACCESSIBLEMEM_ONLY = 49,
+    INACCESSIBLEMEM_OR_ARGMEMONLY = 50,
+    ALLOC_SIZE = 51,
+    WRITEONLY = 52,
+    SPECULATABLE = 53,
+    STRICT_FP = 54,
+    SANITIZE_HWADDRESS = 55,
+    NOCF_CHECK = 56,
+    OPT_FOR_FUZZING = 57,
+    SHADOWCALLSTACK = 58,
+    SPECULATIVE_LOAD_HARDENING = 59,
+    IMMARG = 60,
+    WILLRETURN = 61,
+    NOFREE = 62,
+    NOSYNC = 63,
+    SANITIZE_MEMTAG = 64,
+    PREALLOCATED = 65,
+    NO_MERGE = 66,
+    NULL_POINTER_IS_VALID = 67,
+    NOUNDEF = 68,
+    BYREF = 69,
+    MUSTPROGRESS = 70,
+    NO_CALLBACK = 71,
+    HOT = 72,
+    NO_PROFILE = 73,
+    VSCALE_RANGE = 74,
+    SWIFT_ASYNC = 75,
+    NO_SANITIZE_COVERAGE = 76,
+    ELEMENTTYPE = 77,
+    DISABLE_SANITIZER_INSTRUMENTATION = 78,
+    NO_SANITIZE_BOUNDS = 79,
+    ALLOC_ALIGN = 80,
+    ALLOCATED_POINTER = 81,
+    ALLOC_KIND = 82,
+    PRESPLIT_COROUTINE = 83,
+    FNRETTHUNK_EXTERN = 84,
+    SKIP_PROFILE = 85,
+    MEMORY = 86,
+    NOFPCLASS = 87,
+    OPTIMIZE_FOR_DEBUGGING = 88,
+    WRITABLE = 89,
+    CORO_ONLY_DESTROY_WHEN_COMPLETE = 90,
+    DEAD_ON_UNWIND = 91,
+    RANGE = 92,
+    SANITIZE_NUMERICAL_STABILITY = 93,
+    INITIALIZES = 94,
+    HYBRID_PATCHABLE = 95,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum ComdatSelectionKindCode {
+    ANY = 1,
+    EXACT_MATCH = 2,
+    LARGEST = 3,
+    NO_DUPLICATES = 4,
+    SAME_SIZE = 5,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum SymtabCode {
+    Blob = 1,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum FastMathMap {
+    UnsafeAlgebra = (1 << 0), // Legacy
+    NoNaNs = (1 << 1),
+    NoInfs = (1 << 2),
+    NoSignedZeros = (1 << 3),
+    AllowReciprocal = (1 << 4),
+    AllowContract = (1 << 5),
+    ApproxFunc = (1 << 6),
+    AllowReassoc = (1 << 7),
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum TruncInstOptionalFlag {
+    NO_UNSIGNED_WRAP = 0,
+    NO_SIGNED_WRAP = 1,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum OverFlowingBinOpOptionalFlag {
+    NO_UNSIGNED_WRAP = 0,
+    NO_SIGNED_WRAP = 1,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum MetadataCode {
+    STRING_OLD = 1,              // MDSTRING:      [values]
+    VALUE = 2,                   // VALUE:         [type num, value num]
+    NODE = 3,                    // NODE:          [n x md num]
+    NAME = 4,                    // STRING:        [values]
+    DISTINCT_NODE = 5,           // DISTINCT_NODE: [n x md num]
+    KIND = 6,                    // [n x [id, name]]
+    LOCATION = 7,                // [distinct, line, col, scope, inlined-at?]
+    OLD_NODE = 8,                // OLD_NODE:      [n x (type num, value num)]
+    OLD_FN_NODE = 9,             // OLD_FN_NODE:   [n x (type num, value num)]
+    NAMED_NODE = 10,             // NAMED_NODE:    [n x mdnodes]
+    ATTACHMENT = 11,             // [m x [value, [n x [id, mdnode]]]
+    GENERIC_DEBUG = 12,          // [distinct, tag, vers, header, n x md num]
+    SUBRANGE = 13,               // [distinct, count, lo]
+    ENUMERATOR = 14,             // [isUnsigned|distinct, value, name]
+    BASIC_TYPE = 15,             // [distinct, tag, name, size, align, enc]
+    FILE = 16,                   // [distinct, filename, directory, checksumkind, checksum]
+    DERIVED_TYPE = 17,           // [distinct, ...]
+    COMPOSITE_TYPE = 18,         // [distinct, ...]
+    SUBROUTINE_TYPE = 19,        // [distinct, flags, types, cc]
+    COMPILE_UNIT = 20,           // [distinct, ...]
+    SUBPROGRAM = 21,             // [distinct, ...]
+    LEXICAL_BLOCK = 22,          // [distinct, scope, file, line, column]
+    LEXICAL_BLOCK_FILE = 23,     //[distinct, scope, file, discriminator]
+    NAMESPACE = 24,              // [distinct, scope, file, name, line, exportSymbols]
+    TEMPLATE_TYPE = 25,          // [distinct, scope, name, type, ...]
+    TEMPLATE_VALUE = 26,         // [distinct, scope, name, type, value, ...]
+    GLOBAL_VAR = 27,             // [distinct, ...]
+    LOCAL_VAR = 28,              // [distinct, ...]
+    EXPRESSION = 29,             // [distinct, n x element]
+    OBJC_PROPERTY = 30,          // [distinct, name, file, line, ...]
+    IMPORTED_ENTITY = 31,        // [distinct, tag, scope, entity, line, name]
+    MODULE = 32,                 // [distinct, scope, name, ...]
+    MACRO = 33,                  // [distinct, macinfo, line, name, value]
+    MACRO_FILE = 34,             // [distinct, macinfo, line, file, ...]
+    STRINGS = 35,                // [count, offset] blob([lengths][chars])
+    GLOBAL_DECL_ATTACHMENT = 36, // [valueid, n x [id, mdnode]]
+    GLOBAL_VAR_EXPR = 37,        // [distinct, var, expr]
+    INDEX_OFFSET = 38,           // [offset]
+    INDEX = 39,                  // [bitpos]
+    LABEL = 40,                  // [distinct, scope, name, file, line]
+    STRING_TYPE = 41,            // [distinct, name, size, align,...]
+    // Codes 42 and 43 are reserved for support for Fortran array specific debug
+    // info.
+    COMMON_BLOCK = 44,     // [distinct, scope, name, variable,...]
+    GENERIC_SUBRANGE = 45, // [distinct, count, lo, up, stride]
+    ARG_LIST = 46,         // [n x [type num, value num]]
+    ASSIGN_ID = 47,        // [distinct, ...]
+}
+
+
+pub mod vbr_widths {
+    pub const ALIGNMENT: u32 = 3;
+    pub const ARRAY_LENGTH: u32 = 8;
+    pub const ATTR_INDEX: u32 = 6;
+    pub const BLOCK_COUNT: u32 = 6;
+    pub const BLOCK_INDEX: u32 = 8;
+    pub const CCONV: u32 = 5;
+    pub const INTEGER: u32 = 8;
+    pub const INT_WIDTH: u32 = 8;
+    pub const METADATA_INDEX: u32 = 6;
+    pub const METADATA_KIND_INDEX: u32 = 6;
+    pub const METADATA_STRING_COUNT: u32 = 6;
+    pub const METADATA_STRING_OFF: u32 = 6;
+    pub const STRTAB_LENGTH: u32 = 6;
+    pub const STRTAB_OFFSET: u32 = 8;
+    pub const TYPE_INDEX: u32 = 6;
+    pub const VALUE_INDEX: u32 = 8;
 }

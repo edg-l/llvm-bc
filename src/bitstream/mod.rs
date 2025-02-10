@@ -304,7 +304,7 @@ mod tests {
 
         let abbr = Abbr::new(
             "source",
-            vec![
+            &[
                 OperandDef::Literal(16),
                 OperandDef::Array(OperandDef::Char6.into()),
             ],
@@ -330,7 +330,7 @@ mod tests {
 
         let abbr = Abbr::new(
             "source",
-            vec![
+            &[
                 OperandDef::Literal(16),
                 OperandDef::Array(OperandDef::Char6.into()),
             ],

@@ -26,16 +26,16 @@ pub struct Abbr {
 }
 
 impl Abbr {
-    pub fn new(name: &str, operands: Vec<OperandDef>) -> Self {
+    pub fn new(name: &str, operands: &[OperandDef]) -> Self {
         let mut count = 0;
 
-        for op in &operands {
+        for op in operands {
             count += op.count();
         }
 
         Self {
             name: name.to_string(),
-            operands,
+            operands: operands.to_vec(),
             operand_count: count as u32,
         }
     }
